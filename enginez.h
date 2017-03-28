@@ -53,7 +53,7 @@
 #define MAX_THREADS   10
 #define DEFAULT_BUFF_LEN SEND_BUFFER
 #define DEFAULT_THREAD_NUM 1
-#define VERSION "\nV1.0.0 B20170322\n"
+#define VERSION "\nV1.2.5 B20170322\n"
 
 #define handle_error_en(en, message) \
                do { errno = en; perror(message); exit(EXIT_FAILURE); } while (0)

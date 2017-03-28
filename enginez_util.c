@@ -112,6 +112,8 @@ int parse_paras(struct paras *paras_in, int argc, char **argv) {
             case 'P':
                 if (atoi(optarg) > 0 && atoi(optarg) < MAX_THREADS) {
                     paras_in->thread_num = atoi(optarg);
+                } else {
+                    printf("Only max 9 threads allowed, running at 1 thread\n");
                 }
                 break;
 
