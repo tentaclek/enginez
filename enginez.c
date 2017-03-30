@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Robin K.
+ * Copyright (C) 2015-2016 Robin K.
  *
  * Engine Zero, enginez would just be a tcp/udp benchmark tool
  * which support basic epoll implement and running as a multi-thread mode
@@ -23,57 +23,96 @@
 extern void show_help();
 extern int parse_paras(struct paras *paras_in, int argc, char **argv);
 
-static inline int live_meter(int service_mod, int thread_no,
+static inline int live_meter(int service_mod, int bi, int thread_no,
         int para_in_time_spent, const double bytes_in_out, const double pack_count) {
     double bits_in_out = bytes_in_out * 8;
     double time_spent = (double) para_in_time_spent;
 
-    if (bits_in_out / time_spent >= (double) 1000 * 1000 * 1000 * 1000) {
+    if (bits_in_out / time_spent >= (double) 1000 * 1000 * 1000) {
         if (service_mod == SERVER_MOD) {
-            printf("enginez server rx: %8.3lf Tbits/s |%8.3lf Kpps\b\r",
-                    (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
-                    pack_count / (1000));
+            if (1 == bi) {
+                printf(SERVER_BI_GBITS_STRING,
+                        bits_in_out / time_spent / ((double) 1000 * 1000 * 1000),
+                        pack_count / (1000),
+                        bits_in_out / time_spent / ((double) 1000 * 1000 * 1000),
+                        pack_count / (1000));
+            } else {
+                printf(SERVER_GBITS_STRING,
+                        bits_in_out / time_spent / ((double) 1000 * 1000 * 1000),
+                        pack_count / (1000));
+            }
         } else {
-            printf("enginez client thread[%d] tx: %8.3lf Tbits/s |%8.3lf Kpps\n",
-                    thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
-                    pack_count / time_spent / (1000));
-        }
-    } else if (bits_in_out / time_spent >= (double) 1000 * 1000 * 1000) {
-        if (service_mod == SERVER_MOD) {
-            printf("enginez server rx: %8.3lf Gbits/s |%8.3lf Kpps\b\r",
-                    bits_in_out / time_spent / ((double) 1000 * 1000 * 1000),
-                    pack_count / (1000));
-        } else {
-            printf("enginez client thread[%d] tx: %8.3lf Gbits/s |%8.3lf Kpps\n",
+            printf(CLIENT_GBITS_STRING,
                     thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000),
                     pack_count / time_spent / (1000));
         }
     } else if (bits_in_out / time_spent >= 1000 * 1000) {
         if (service_mod == SERVER_MOD) {
-            printf("enginez server rx: %8.3lf Mbits/s |%8.3lf Kpps\b\r",
-                    bits_in_out / time_spent / (1000 * 1000),
-                    pack_count / (1000));
+            if (1 == bi) {
+                printf(SERVER_BI_MBITS_STRING,
+                        bits_in_out / time_spent / (1000 * 1000),
+                        pack_count / (1000),
+                        bits_in_out / time_spent / (1000 * 1000),
+                        pack_count / (1000));
+
+            } else {
+                printf(SERVER_MBITS_STRING,
+                        bits_in_out / time_spent / (1000 * 1000),
+                        pack_count / (1000));
+            }
         } else {
-            printf("enginez client thread[%d] tx: %8.3lf Mbits/s |%8.3lf Kpps\n",
+            printf(CLIENT_MBITS_STRING,
                     thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000),
                     pack_count / time_spent / (1000));
         }
     } else if (bits_in_out / time_spent >= 1000) {
         if (service_mod == SERVER_MOD) {
-            printf("enginez server rx: %8.3lf Kbits/s |%8.3lf Kpps\b\r",
-                    (bits_in_out / time_spent) / ((double) 1000),
-                    pack_count / 1000);
+            if (1 == bi) {
+                printf(SERVER_BI_KBITS_STRING,
+                        (bits_in_out / time_spent) / ((double) 1000),
+                        pack_count / 1000,
+                        (bits_in_out / time_spent) / ((double) 1000),
+                        pack_count / 1000);
+
+            } else {
+                printf(SERVER_KBITS_STRING,
+                        (bits_in_out / time_spent) / ((double) 1000),
+                        pack_count / 1000);
+            }
         } else {
-            printf("enginez client thread[%d] tx: %8.3lf Kbits/s |%8.3lf Kpps\n",
+            printf(CLIENT_KBITS_STRING,
                     thread_no, (bits_in_out / time_spent) / ((double) 1000),
                     pack_count / time_spent / 1000);
         }
+    } else if (bits_in_out / time_spent >= (double) 1000 * 1000 * 1000 * 1000) {
+        if (service_mod == SERVER_MOD) {
+            if (1 == bi) {
+                printf(SERVER_BI_TBITS_STRING,
+                        (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
+                        pack_count / (1000),
+                        (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
+                        pack_count / (1000));
+
+            } else {
+                printf(SERVER_TBITS_STRING,
+                        (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
+                        pack_count / (1000));
+            }
+        } else {
+            printf(CLIENT_TBITS_STRING, thread_no,
+                    (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
+                    pack_count / time_spent / (1000));
+        }
     } else {
         if (service_mod == SERVER_MOD) {
-            printf("enginez server rx: %8.3lf Bits/s |%8.3lf pps\b\r",
-                    bits_in_out / time_spent, pack_count);
+            if (1 == bi) {
+                printf(SERVER_BI_BITS_STRING, bits_in_out / time_spent, pack_count,
+                        bits_in_out / time_spent, pack_count);
+            } else {
+                printf(SERVER_BITS_STRING, bits_in_out / time_spent, pack_count);
+            }
         } else {
-            printf("enginez client thread[%d] tx: %8.3lf Bits/s |%8.3lf pps\n",
+            printf(CLIENT_BITS_STRING,
                     thread_no, bits_in_out / time_spent, pack_count / time_spent);
         }
     }
@@ -162,7 +201,7 @@ int dump_send_func(const void *ptr) {
     /* we just send data with every byte in 'c' */
     memset(c_buffer, 'c', data->paras_in->buff_len);
 
-    printf("enginez client thread[%d] peer:%s:%s packet len:%d\n",
+    printf("Z client thread[%d] peer:%s:%s packet len:%d\n",
             data->thread_no, data->paras_in->peer_addr, data->paras_in->port, data->paras_in->buff_len);
 
     if (data->paras_in->protocol == UDP_DGRAM) {
@@ -182,6 +221,7 @@ int dump_send_func(const void *ptr) {
                 }
                 continue;
             }
+
             if (data->paras_in->debug == 1) {
                 char recv_buff[32] = "\0";
                 ssize_t len = 0;
@@ -202,11 +242,11 @@ int dump_send_func(const void *ptr) {
             bytes_sent += iret;
             pack_count++;
             /* 
-             * Actually, time(NULL) is a bad idea in this place, it's a time 
-             * consuming function which can be tune better in the future 
+             * Actually, time(NULL) is a bad idea in this place, it's 
+             * a time consuming function which can be tune better 
              */
             if (data->paras_in->time_interval == ((double) time(NULL) - time_start)) {
-                live_meter(data->paras_in->service_mod, data->thread_no,
+                live_meter(data->paras_in->service_mod, 0, data->thread_no,
                         data->paras_in->time_interval, bytes_sent, pack_count);
                 pack_count = 0;
                 bytes_sent = 0;
@@ -230,7 +270,7 @@ int dump_send_func(const void *ptr) {
             pack_count++;
 
             if (data->paras_in->time_interval == ((double) time(NULL) - time_start)) {
-                live_meter(data->paras_in->service_mod, data->thread_no,
+                live_meter(data->paras_in->service_mod, 0, data->thread_no,
                         data->paras_in->time_interval, bytes_sent, pack_count);
                 pack_count = 0;
                 bytes_sent = 0;
@@ -258,7 +298,7 @@ char udp_buffer[UDP_RECV_BUFFER + 1] = "\0";
 struct sockaddr_in6 peer_addr;
 socklen_t sock_len;
 
-static inline ssize_t dump_recv_func(int debug, int protocol, int sockfd,
+static inline ssize_t dump_recv_func(int bi, int debug, int protocol, int sockfd,
         ssize_t *bytes_count, double *bytes_recv, double *time_start, double *pack_count) {
 
     if (TCP_STREAM == protocol) {
@@ -267,9 +307,17 @@ static inline ssize_t dump_recv_func(int debug, int protocol, int sockfd,
         *bytes_count = recvfrom(sockfd, udp_buffer,
                 UDP_RECV_BUFFER, MSG_DONTWAIT, (struct sockaddr *) &peer_addr, &sock_len);
 
+        if (1 == bi) {
+
+            if (0 > sendto(sockfd, udp_buffer, *bytes_count,
+                    0, (struct sockaddr *) &peer_addr, sizeof (struct sockaddr_in6)))
+
+                perror("sendto err");
+        }
+
         if (debug == 1) {
 
-            char *pack = "hullo enginez client";
+            char *pack = "hullo Z client";
             ssize_t sent_len = 0;
             char test[64] = "\0";
 
@@ -288,7 +336,8 @@ static inline ssize_t dump_recv_func(int debug, int protocol, int sockfd,
     *bytes_recv += *bytes_count;
 
     if (1.0 == ((double) time(NULL) - *time_start)) {
-        live_meter(SERVER_MOD, 0, 1, *bytes_recv, *pack_count);
+
+        live_meter(SERVER_MOD, bi, 0, 1, *bytes_recv, *pack_count);
         *bytes_recv = 0;
         *pack_count = 0;
         *time_start = (double) time(NULL);
@@ -392,9 +441,9 @@ void epoll_func(void *ptr) {
                 close(listen_sock);
                 exit(EXIT_FAILURE);
             }
-            printf("enginez server running TCP protocol on port %s\n\n", data->paras_in->port);
+            printf("Z server running TCP protocol on port %s\n\n", data->paras_in->port);
         } else {
-            printf("enginez server running UDP protocol on port %s\n\n", data->paras_in->port);
+            printf("Z server running UDP protocol on port %s\n\n", data->paras_in->port);
         }
 
 
@@ -464,7 +513,8 @@ void epoll_func(void *ptr) {
                             close(listen_sock);
                             exit(EXIT_FAILURE);
                         }
-                        dump_recv_func(data->paras_in->debug, UDP_DGRAM, events[n].data.fd,
+                        dump_recv_func(data->paras_in->bidirection,
+                                data->paras_in->debug, UDP_DGRAM, events[n].data.fd,
                                 &bytes_count, &bytes_recv, &time_start, &pack_count);
                         pack_count++;
 
@@ -481,12 +531,14 @@ void epoll_func(void *ptr) {
                     }
                 } else {
                     if (data->paras_in->protocol == TCP_STREAM) {
-                        ret_len = dump_recv_func(data->paras_in->debug, TCP_STREAM,
-                                events[n].data.fd, &bytes_count, &bytes_recv, &time_start, &pack_count);
+                        ret_len = dump_recv_func(data->paras_in->bidirection,
+                                data->paras_in->debug, TCP_STREAM, events[n].data.fd,
+                                &bytes_count, &bytes_recv, &time_start, &pack_count);
                         pack_count++;
                     } else {
-                        ret_len = dump_recv_func(data->paras_in->debug, UDP_DGRAM,
-                                events[n].data.fd, &bytes_count, &bytes_recv, &time_start, &pack_count);
+                        ret_len = dump_recv_func(data->paras_in->bidirection,
+                                data->paras_in->debug, UDP_DGRAM, events[n].data.fd,
+                                &bytes_count, &bytes_recv, &time_start, &pack_count);
                         pack_count++;
                     }
 
@@ -503,6 +555,7 @@ void epoll_func(void *ptr) {
         }
         pthread_exit(0);
     } else {
+
         dump_send_func(ptr);
     }
 }
@@ -512,6 +565,7 @@ void re_entry_func(void *ptr) {
     data = (thdata *) ptr;
 
     if (data->paras_in->service_mod == CLIENT_MOD) {
+
         dump_send_func(ptr);
     }
     pthread_exit(0);
@@ -574,6 +628,7 @@ int thread_pool_create(struct paras *paras_in) {
     for (i = 0; i < n; i++) {
         s = pthread_join(data[i].thread_id, NULL);
         if (s != 0) {
+
             handle_error_en(s, "pthread_join");
         }
     }
@@ -600,6 +655,15 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    if (paras_in.protocol == TCP_STREAM) {
+        if (paras_in.bidirection == 1)
+            printf("\nbidirection mode only for UDP protocol!\n\n");
+        if (paras_in.debug == 1)
+            printf("\ndebug mode only for UDP protocol!\n\n");
+
+        exit(EXIT_FAILURE);
+    }
+
     /* When enginez running as client We should check input IP address first */
     if (paras_in.service_mod == CLIENT_MOD) {
         if ((inet_pton(AF_INET6, paras_in.peer_addr, &addr_6.sin6_addr) <= 0)
@@ -607,7 +671,14 @@ int main(int argc, char *argv[]) {
             printf("enginez need a proper IP address!\n");
             exit(EXIT_FAILURE);
         }
+
+        if (paras_in.buff_len > 1472) {
+            printf("\nIP packet bigger than MTU, which "
+                    "cause pps figure will not equal to wire!\n\n");
+        }
     }
+
+
 
     thread_pool_create(&paras_in);
     exit(EXIT_SUCCESS);

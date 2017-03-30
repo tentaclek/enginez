@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Robin K.
+ * Copyright (C) 2015-2016 Robin K.
  *
  * Engine Zero, enginez would just be a tcp/udp benchmark tool
  * which support basic epoll implement and running as a multi-thread mode
@@ -28,13 +28,14 @@ const char usage_str[] =
         " -s 	--server	run as server mode, can accept both IPv4 and IPv6 on port 9000\n"
         " -c 	--client	run as client mode\n"
         " -d    --debug         run as single packet UDP C/S mode\n"
+        " -b    --bidirection   run as bidirection mode\n"
         " -U	--udp		use UDP protocol\n"
         " -T	--tcp		use TCP protocol\n"
         " -p	--port		protocol port for client connecting or server listening\n"
         " -t	--time		time for enginez client running\n"
         " -l	--len		buffer length for enginez client sending\n"
         " -i	--interval	time interval for enginez client mode display\n"
-        " -P	--thread	thread numbers for enginez client mode, default value is 1, max is 9\n"
+        " -P	--thread	thread numbers for enginez client mode, default is 1, max is 9\n"
         " -h	--help		display help messages\n"
         " -v	--version	display enginez version number\n"
         "\n\nEXAMPLE\n"

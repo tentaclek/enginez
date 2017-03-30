@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Robin K.
+ * Copyright (C) 2015-2016 Robin K.
  *
  * Engine Zero, enginez would just be a tcp/udp benchmark tool
  * which support basic epoll implement and running as a multi-thread mode
@@ -49,10 +49,11 @@ int parse_paras(struct paras *paras_in, int argc, char **argv) {
     paras_in->time_interval = 1;
     paras_in->protocol = TCP_STREAM;
     paras_in->debug = 0;
+    paras_in->bidirection = 0;
     paras_in->time_perform = 10;
     strncpy(paras_in->port, DEFAULT_PORT, 8);
 
-    while ((c = getopt_long(argc, argv, "c:sdTUp:t:l:i:P:hv", long_opts, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "c:sdbTUp:t:l:i:P:hv", long_opts, NULL)) != -1) {
         switch (c) {
             case 's':
                 if (paras_in->service_mod == CLIENT_MOD) {
@@ -74,6 +75,10 @@ int parse_paras(struct paras *paras_in, int argc, char **argv) {
 
             case 'd':
                 paras_in->debug = 1;
+                break;
+
+            case 'b':
+                paras_in->bidirection = 1;
                 break;
 
             case 'p':

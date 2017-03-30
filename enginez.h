@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Robin K.
+ * Copyright (C) 2015-2016 Robin K.
  *
  * Engine Zero, enginez would just be a tcp/udp benchmark tool
  * which support basic epoll implement and running as a multi-thread mode
@@ -53,7 +53,25 @@
 #define MAX_THREADS   10
 #define DEFAULT_BUFF_LEN SEND_BUFFER
 #define DEFAULT_THREAD_NUM 1
-#define VERSION "\nV1.2.5 B20170322\n"
+#define VERSION "\nenginez V1.1 B20170329\n"
+
+#define SERVER_TBITS_STRING "Z server rx: %8.3lf Tbits/s |%8.3lf Kpps\b\r"
+#define SERVER_GBITS_STRING "Z server rx: %8.3lf Gbits/s |%8.3lf Kpps\b\r"
+#define SERVER_MBITS_STRING "Z server rx: %8.3lf Mbits/s |%8.3lf Kpps\b\r"
+#define SERVER_KBITS_STRING "Z server rx: %8.3lf Kbits/s |%8.3lf Kpps\b\r"
+#define SERVER_BITS_STRING  "Z server rx: %8.3lf Bits/s |%8.3lf pps\b\r"
+
+#define SERVER_BI_TBITS_STRING "Z server rx: %8.3lf Tbits/s |%8.3lf Kpps tx: %8.3lf Tbits/s |%8.3lf Kpps\b\r"
+#define SERVER_BI_GBITS_STRING "Z server rx: %8.3lf Gbits/s |%8.3lf Kpps tx: %8.3lf Gbits/s |%8.3lf Kpps\b\r"
+#define SERVER_BI_MBITS_STRING "Z server rx: %8.3lf Mbits/s |%8.3lf Kpps tx: %8.3lf Mbits/s |%8.3lf Kpps\b\r"
+#define SERVER_BI_KBITS_STRING "Z server rx: %8.3lf Kbits/s |%8.3lf Kpps tx: %8.3lf Kbits/s |%8.3lf Kpps\b\r"
+#define SERVER_BI_BITS_STRING  "Z server rx: %8.3lf Bits/s |%8.3lf pps tx: %8.3lf Bits/s |%8.3lf pps\b\r"
+
+#define CLIENT_TBITS_STRING "Z client thread[%d] tx: %8.3lf Tbits/s |%8.3lf Kpps\n"
+#define CLIENT_GBITS_STRING "Z client thread[%d] tx: %8.3lf Gbits/s |%8.3lf Kpps\n"
+#define CLIENT_MBITS_STRING "Z client thread[%d] tx: %8.3lf Mbits/s |%8.3lf Kpps\n"
+#define CLIENT_KBITS_STRING "Z client thread[%d] tx: %8.3lf Kbits/s |%8.3lf Kpps\n"
+#define CLIENT_BITS_STRING  "Z client thread[%d] tx: %8.3lf Bits/s |%8.3lf pps\n"
 
 #define handle_error_en(en, message) \
                do { errno = en; perror(message); exit(EXIT_FAILURE); } while (0)
@@ -75,6 +93,7 @@ typedef struct paras {
     int service_mod;
     int time_perform;
     int debug;
+    int bidirection;
     int buff_len;
     int protocol;
     int time_interval;
