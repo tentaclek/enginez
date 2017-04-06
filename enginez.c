@@ -42,9 +42,16 @@ static inline int live_meter(int service_mod, int bi, int thread_no,
                         pack_count / (1000));
             }
         } else {
-            printf(CLIENT_GBITS_STRING,
-                    thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000),
-                    pack_count / time_spent / (1000));
+            if (1 == bi) {
+                printf(CLIENT_BI_GBITS_STRING,
+                        thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000),
+                        pack_count / time_spent / (1000));
+            } else {
+                printf(CLIENT_GBITS_STRING,
+                        thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000),
+                        pack_count / time_spent / (1000));
+
+            }
         }
     } else if (bits_in_out / time_spent >= 1000 * 1000) {
         if (service_mod == SERVER_MOD) {
@@ -61,9 +68,15 @@ static inline int live_meter(int service_mod, int bi, int thread_no,
                         pack_count / (1000));
             }
         } else {
-            printf(CLIENT_MBITS_STRING,
-                    thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000),
-                    pack_count / time_spent / (1000));
+            if (1 == bi) {
+                printf(CLIENT_BI_MBITS_STRING,
+                        thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000),
+                        pack_count / time_spent / (1000));
+            } else {
+                printf(CLIENT_MBITS_STRING,
+                        thread_no, (bits_in_out / time_spent) / ((double) 1000 * 1000),
+                        pack_count / time_spent / (1000));
+            }
         }
     } else if (bits_in_out / time_spent >= 1000) {
         if (service_mod == SERVER_MOD) {
@@ -80,9 +93,15 @@ static inline int live_meter(int service_mod, int bi, int thread_no,
                         pack_count / 1000);
             }
         } else {
-            printf(CLIENT_KBITS_STRING,
-                    thread_no, (bits_in_out / time_spent) / ((double) 1000),
-                    pack_count / time_spent / 1000);
+            if (1 == bi) {
+                printf(CLIENT_BI_KBITS_STRING,
+                        thread_no, (bits_in_out / time_spent) / ((double) 1000),
+                        pack_count / time_spent / 1000);
+            } else {
+                printf(CLIENT_KBITS_STRING,
+                        thread_no, (bits_in_out / time_spent) / ((double) 1000),
+                        pack_count / time_spent / 1000);
+            }
         }
     } else if (bits_in_out / time_spent >= (double) 1000 * 1000 * 1000 * 1000) {
         if (service_mod == SERVER_MOD) {
@@ -99,9 +118,15 @@ static inline int live_meter(int service_mod, int bi, int thread_no,
                         pack_count / (1000));
             }
         } else {
-            printf(CLIENT_TBITS_STRING, thread_no,
-                    (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
-                    pack_count / time_spent / (1000));
+            if (1 == bi) {
+                printf(CLIENT_BI_TBITS_STRING, thread_no,
+                        (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
+                        pack_count / time_spent / (1000));
+            } else {
+                printf(CLIENT_TBITS_STRING, thread_no,
+                        (bits_in_out / time_spent) / ((double) 1000 * 1000 * 1000 * 1000),
+                        pack_count / time_spent / (1000));
+            }
         }
     } else {
         if (service_mod == SERVER_MOD) {
@@ -112,8 +137,13 @@ static inline int live_meter(int service_mod, int bi, int thread_no,
                 printf(SERVER_BITS_STRING, bits_in_out / time_spent, pack_count);
             }
         } else {
-            printf(CLIENT_BITS_STRING,
-                    thread_no, bits_in_out / time_spent, pack_count / time_spent);
+            if (1 == bi) {
+                printf(CLIENT_BI_BITS_STRING,
+                        thread_no, bits_in_out / time_spent, pack_count / time_spent);
+            } else {
+                printf(CLIENT_BITS_STRING,
+                        thread_no, bits_in_out / time_spent, pack_count / time_spent);
+            }
         }
     }
     fflush(stdout);
@@ -138,13 +168,48 @@ static int epoll_non_blocking(int sockfd) {
     return RET_SUCCESS;
 }
 
-int dump_send_func(const void *ptr) {
+void bi_recv(void *ptr) {
+    thdata *data = NULL;
+    data = (thdata *) ptr;
+    char recv_buff[UDP_RECV_BUFFER] = "\0";
+    ssize_t len = 0;
+    socklen_t addlen = 0;
+    double time_start = 0;
+    double bytes_sent = 0;
+    double pack_count = 0;
+    struct sockaddr_in6 peer_addr;
+    memset((struct sockaddr_in6 *) &peer_addr, 0x00, sizeof ( struct sockaddr_in6));
+    addlen = sizeof (peer_addr);
+
+    time_start = (double) time(NULL);
+
+    while (1) {
+
+        len = recvfrom(data->paras_in->sockfd, recv_buff, UDP_RECV_BUFFER, 0,
+                (struct sockaddr *) &peer_addr, &addlen);
+        bytes_sent += len;
+        pack_count++;
+
+        if (data->paras_in->time_interval == ((double) time(NULL) - time_start)) {
+            live_meter(data->paras_in->service_mod, 1, data->thread_no,
+                    data->paras_in->time_interval, bytes_sent, pack_count);
+            pack_count = 0;
+            bytes_sent = 0;
+            time_start = (double) time(NULL);
+
+        }
+
+    }
+}
+
+int dump_send_func(void *ptr) {
     thdata *data = NULL;
     data = (thdata *) ptr;
     int sockfd = 0;
-    int iret = 0;
-    int protocol = 0;
+    pthread_attr_t attr;
+    pthread_t thread_id;
     int s = 0;
+    int iret = 0;
     char c_buffer[data->paras_in->buff_len + 1];
     double time_perform = 0;
     double time_start = 0;
@@ -154,19 +219,17 @@ int dump_send_func(const void *ptr) {
     struct addrinfo *result = NULL;
     struct addrinfo *rp = NULL;
 
-
-    if (data->paras_in->protocol == UDP_DGRAM) {
-        protocol = SOCK_DGRAM;
-    } else {
-        protocol = SOCK_STREAM;
-    }
-
     memset(&hints, 0, sizeof (struct addrinfo));
 
     hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = protocol;
     hints.ai_flags = 0;
     hints.ai_protocol = 0;
+
+    if (data->paras_in->protocol == UDP_DGRAM) {
+        hints.ai_socktype = SOCK_DGRAM;
+    } else {
+        hints.ai_socktype = SOCK_STREAM;
+    }
 
     s = getaddrinfo(data->paras_in->peer_addr, data->paras_in->port, &hints, &result);
     if (s != 0) {
@@ -197,6 +260,25 @@ int dump_send_func(const void *ptr) {
         exit(EXIT_FAILURE);
     }
 
+    data->paras_in->sockfd = sockfd;
+
+    if (1 == data->paras_in->bidirection) {
+
+        s = pthread_attr_init(&attr);
+        if (s != 0) {
+            handle_error_en(s, "pthread_attr_init");
+        }
+
+        s = pthread_create(&thread_id, NULL, (void *) &bi_recv, (void *) data);
+        if (s != 0) {
+            handle_error_en(s, "pthread_create");
+        }
+
+        s = pthread_attr_destroy(&attr);
+        if (s != 0) {
+            handle_error_en(s, "pthread_attr_destroy");
+        }
+    }
 
     /* we just send data with every byte in 'c' */
     memset(c_buffer, 'c', data->paras_in->buff_len);
@@ -204,9 +286,10 @@ int dump_send_func(const void *ptr) {
     printf("Z client thread[%d] peer:%s:%s packet len:%d\n",
             data->thread_no, data->paras_in->peer_addr, data->paras_in->port, data->paras_in->buff_len);
 
+    time_start = (double) time(NULL);
+    time_perform = (double) time(NULL);
     if (data->paras_in->protocol == UDP_DGRAM) {
-        time_start = (double) time(NULL);
-        time_perform = (double) time(NULL);
+
 
         while (1) {
             iret = sendto(sockfd, c_buffer, strlen(c_buffer), 0, rp->ai_addr, rp->ai_addrlen);
@@ -217,7 +300,7 @@ int dump_send_func(const void *ptr) {
                 if (errno == ECONNREFUSED) {
                     close(sockfd);
                     freeaddrinfo(result);
-                    return RET_SUCCESS;
+                    return RET_FAILURE;
                 }
                 continue;
             }
@@ -256,13 +339,10 @@ int dump_send_func(const void *ptr) {
             if (data->paras_in->time_perform == ((double) time(NULL) - time_perform)) {
                 close(sockfd);
                 freeaddrinfo(result);
-                return RET_SUCCESS;
+                return RET_FAILURE;
             }
         }
     } else {
-
-        time_start = (double) time(NULL);
-        time_perform = (double) time(NULL);
 
         while (1) {
             iret = send(sockfd, c_buffer, strlen(c_buffer), 0);
@@ -280,7 +360,7 @@ int dump_send_func(const void *ptr) {
             if (data->paras_in->time_perform == ((double) time(NULL) - time_perform)) {
                 close(sockfd);
                 freeaddrinfo(result);
-                return RET_SUCCESS;
+                return RET_FAILURE;
             }
 
             if (iret < 0) {
@@ -361,18 +441,16 @@ void epoll_func(void *ptr) {
         ssize_t ret_len = 0;
         double time_start = 0;
         double pack_count = 0;
-        int protocol = 0;
-
-        if (data->paras_in->protocol == UDP_DGRAM) {
-            protocol = SOCK_DGRAM;
-        } else {
-            protocol = SOCK_STREAM;
-        }
 
         memset(&hints, 0, sizeof (struct addrinfo));
 
+        if (data->paras_in->protocol == UDP_DGRAM) {
+            hints.ai_socktype = SOCK_DGRAM;
+        } else {
+            hints.ai_socktype = SOCK_STREAM;
+        }
+
         hints.ai_family = AF_INET6;
-        hints.ai_socktype = protocol;
         hints.ai_flags = AI_PASSIVE;
 
         /* well, when OS do not support AF_INET6 we should set ai_family to AF_INET */
@@ -500,9 +578,7 @@ void epoll_func(void *ptr) {
                                 break;
                             }
                         }
-                    }
 
-                    if (data->paras_in->protocol == TCP_STREAM) {
                         if (epoll_non_blocking(conn_sock) == -1) {
                             close(conn_sock);
                             exit(EXIT_FAILURE);
@@ -553,19 +629,7 @@ void epoll_func(void *ptr) {
                 }
             }
         }
-        pthread_exit(0);
     } else {
-
-        dump_send_func(ptr);
-    }
-}
-
-void re_entry_func(void *ptr) {
-    thdata *data;
-    data = (thdata *) ptr;
-
-    if (data->paras_in->service_mod == CLIENT_MOD) {
-
         dump_send_func(ptr);
     }
     pthread_exit(0);
@@ -575,34 +639,8 @@ int thread_pool_create(struct paras *paras_in) {
     int i = 0;
     int n = paras_in->thread_num;
     thdata data[n];
-    int s;
+    int s = 0;
     pthread_attr_t attr;
-
-    if (paras_in->service_mod == SERVER_MOD) {
-        data[n].paras_in = paras_in;
-        data[n].thread_no = 0;
-
-        s = pthread_attr_init(&attr);
-        if (s != 0) {
-            handle_error_en(s, "pthread_attr_init");
-        }
-
-        s = pthread_create(&data[n].thread_id, NULL, (void *) &epoll_func, (void *) &data[n]);
-        if (s != 0) {
-            handle_error_en(s, "pthread_create");
-        }
-
-        s = pthread_attr_destroy(&attr);
-        if (s != 0) {
-            handle_error_en(s, "pthread_attr_destroy");
-        }
-
-        s = pthread_join(data[n].thread_id, NULL);
-        if (s != 0) {
-            handle_error_en(s, "pthread_join");
-        }
-        return RET_SUCCESS;
-    }
 
     s = pthread_attr_init(&attr);
     if (s != 0) {
@@ -613,7 +651,7 @@ int thread_pool_create(struct paras *paras_in) {
         data[i].paras_in = paras_in;
         data[i].thread_no = i;
 
-        s = pthread_create(&data[i].thread_id, &attr, (void *) &re_entry_func, (void *) &data[i]);
+        s = pthread_create(&data[i].thread_id, &attr, (void *) &epoll_func, (void *) &data[i]);
         if (s != 0) {
             handle_error_en(s, "pthread_create");
         }
@@ -656,12 +694,15 @@ int main(int argc, char *argv[]) {
     }
 
     if (paras_in.protocol == TCP_STREAM) {
-        if (paras_in.bidirection == 1)
+        if (paras_in.bidirection == 1) {
             printf("\nbidirection mode only for UDP protocol!\n\n");
-        if (paras_in.debug == 1)
-            printf("\ndebug mode only for UDP protocol!\n\n");
+            exit(EXIT_FAILURE);
+        }
 
-        exit(EXIT_FAILURE);
+        if (paras_in.debug == 1) {
+            printf("\ndebug mode only for UDP protocol!\n\n");
+            exit(EXIT_FAILURE);
+        }
     }
 
     /* When enginez running as client We should check input IP address first */

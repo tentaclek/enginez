@@ -55,23 +55,29 @@
 #define DEFAULT_THREAD_NUM 1
 #define VERSION "\nenginez V1.1 B20170329\n"
 
-#define SERVER_TBITS_STRING "Z server rx: %8.3lf Tbits/s |%8.3lf Kpps\b\r"
-#define SERVER_GBITS_STRING "Z server rx: %8.3lf Gbits/s |%8.3lf Kpps\b\r"
-#define SERVER_MBITS_STRING "Z server rx: %8.3lf Mbits/s |%8.3lf Kpps\b\r"
-#define SERVER_KBITS_STRING "Z server rx: %8.3lf Kbits/s |%8.3lf Kpps\b\r"
-#define SERVER_BITS_STRING  "Z server rx: %8.3lf Bits/s |%8.3lf pps\b\r"
+#define SERVER_TBITS_STRING "Z server rx:\033[32m%8.3lf Tbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_GBITS_STRING "Z server rx:\033[32m%8.3lf Gbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_MBITS_STRING "Z server rx:\033[32m%8.3lf Mbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_KBITS_STRING "Z server rx:\033[32m%8.3lf Kbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_BITS_STRING  "Z server rx:\033[32m%8.3lf bits/s %8.3lf pps\033[0m\b\r"
 
-#define SERVER_BI_TBITS_STRING "Z server rx: %8.3lf Tbits/s |%8.3lf Kpps tx: %8.3lf Tbits/s |%8.3lf Kpps\b\r"
-#define SERVER_BI_GBITS_STRING "Z server rx: %8.3lf Gbits/s |%8.3lf Kpps tx: %8.3lf Gbits/s |%8.3lf Kpps\b\r"
-#define SERVER_BI_MBITS_STRING "Z server rx: %8.3lf Mbits/s |%8.3lf Kpps tx: %8.3lf Mbits/s |%8.3lf Kpps\b\r"
-#define SERVER_BI_KBITS_STRING "Z server rx: %8.3lf Kbits/s |%8.3lf Kpps tx: %8.3lf Kbits/s |%8.3lf Kpps\b\r"
-#define SERVER_BI_BITS_STRING  "Z server rx: %8.3lf Bits/s |%8.3lf pps tx: %8.3lf Bits/s |%8.3lf pps\b\r"
+#define SERVER_BI_TBITS_STRING "Z server rx:\033[32m%8.3lf Tbits/s %8.3lf Kpps\033[0m tx:\033[33m%8.3lf Tbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_BI_GBITS_STRING "Z server rx:\033[32m%8.3lf Gbits/s %8.3lf Kpps\033[0m tx:\033[33m%8.3lf Gbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_BI_MBITS_STRING "Z server rx:\033[32m%8.3lf Mbits/s %8.3lf Kpps\033[0m tx:\033[33m%8.3lf Mbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_BI_KBITS_STRING "Z server rx:\033[32m%8.3lf Kbits/s %8.3lf Kpps\033[0m tx:\033[33m%8.3lf Kbits/s %8.3lf Kpps\033[0m\b\r"
+#define SERVER_BI_BITS_STRING  "Z server rx:\033[32m%8.3lf Bits/s %8.3lf pps\033[0m tx:\033[33m%8.3lf Bits/s %8.3lf pps\033[0m\b\r"
 
-#define CLIENT_TBITS_STRING "Z client thread[%d] tx: %8.3lf Tbits/s |%8.3lf Kpps\n"
-#define CLIENT_GBITS_STRING "Z client thread[%d] tx: %8.3lf Gbits/s |%8.3lf Kpps\n"
-#define CLIENT_MBITS_STRING "Z client thread[%d] tx: %8.3lf Mbits/s |%8.3lf Kpps\n"
-#define CLIENT_KBITS_STRING "Z client thread[%d] tx: %8.3lf Kbits/s |%8.3lf Kpps\n"
-#define CLIENT_BITS_STRING  "Z client thread[%d] tx: %8.3lf Bits/s |%8.3lf pps\n"
+#define CLIENT_TBITS_STRING "Z client thread[%d] tx:\033[33m%8.3lf Tbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_GBITS_STRING "Z client thread[%d] tx:\033[33m%8.3lf Gbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_MBITS_STRING "Z client thread[%d] tx:\033[33m%8.3lf Mbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_KBITS_STRING "Z client thread[%d] tx:\033[33m%8.3lf Kbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_BITS_STRING  "Z client thread[%d] tx:\033[33m%8.3lf Bits/s %8.3lf pps\033[0m\n"
+
+#define CLIENT_BI_TBITS_STRING "Z client thread[%d] rx:\033[32m%8.3lf Tbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_BI_GBITS_STRING "Z client thread[%d] rx:\033[32m%8.3lf Gbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_BI_MBITS_STRING "Z client thread[%d] rx:\033[32m%8.3lf Mbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_BI_KBITS_STRING "Z client thread[%d] rx:\033[32m%8.3lf Kbits/s %8.3lf Kpps\033[0m\n"
+#define CLIENT_BI_BITS_STRING  "Z client thread[%d] rx:\033[32m%8.3lf Bits/s %8.3lf pps\033[0m\n"
 
 #define handle_error_en(en, message) \
                do { errno = en; perror(message); exit(EXIT_FAILURE); } while (0)
@@ -97,6 +103,7 @@ typedef struct paras {
     int buff_len;
     int protocol;
     int time_interval;
+    int sockfd;
     int __padding__;
     int thread_num;
     char peer_addr[64];

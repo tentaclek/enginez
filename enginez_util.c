@@ -30,6 +30,7 @@ int parse_paras(struct paras *paras_in, int argc, char **argv) {
         {"client", required_argument, NULL, 'c'},
         {"server", no_argument, NULL, 's'},
         {"debug", no_argument, NULL, 'd'},
+        {"bidirection", no_argument, NULL, 'b'},
         {"udp", no_argument, NULL, 'U'},
         {"tcp", no_argument, NULL, 'T'},
         {"port", required_argument, NULL, 'p'},
