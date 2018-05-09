@@ -621,10 +621,9 @@ void epoll_func(void *ptr)
 			if (setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR,
 					(char *) &flags, sizeof(flags)) < 0)
 			{
-				perror("setsockopt SO_REUSEADDR err");
 				close(listen_sock);
 				freeaddrinfo(result);
-				exit(EXIT_FAILURE);
+				handle_error_en(0 , "setsockopt SO_REUSEADDR err");
 			}
 
 			if (rp->ai_family == AF_INET6)
@@ -634,10 +633,9 @@ void epoll_func(void *ptr)
 				if (setsockopt(listen_sock, IPPROTO_IPV6, IPV6_V6ONLY,
 						(char *) &flags, sizeof(flags)) < 0)
 				{
-					perror("setsockopt IPV6_V6ONLY err");
 					close(listen_sock);
 					freeaddrinfo(result);
-					exit(EXIT_FAILURE);
+					handle_error_en(0, "setsockopt IPV6_V6ONLY err");
 				}
 			}
 
@@ -657,8 +655,7 @@ void epoll_func(void *ptr)
 
 		if (rp == NULL)
 		{
-			fprintf(stderr, "Could not bind\n");
-			exit(EXIT_FAILURE);
+			handle_error_en(0, "Could not bind");
 		}
 
 		freeaddrinfo(result);
@@ -667,9 +664,8 @@ void epoll_func(void *ptr)
 		{
 			if (listen(listen_sock, SOMAXCONN) < 0)
 			{
-				perror("Listen err");
 				close(listen_sock);
-				exit(EXIT_FAILURE);
+				handle_error_en(0, "listen error");
 			}
 			printf("Z server running TCP protocol on port %s\n\n",
 					data->paras_in->port);
@@ -683,18 +679,16 @@ void epoll_func(void *ptr)
 		epollfd = epoll_create(10);
 		if (epollfd == -1)
 		{
-			perror("epoll_create err");
 			close(listen_sock);
-			exit(EXIT_FAILURE);
+			handle_error_en(epollfd, "epoll_create err");
 		}
 
 		ev.events = EPOLLIN;
 		ev.data.fd = listen_sock;
 		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1)
 		{
-			perror("epoll_ctl: listen_sock err");
 			close(listen_sock);
-			exit(EXIT_FAILURE);
+			handle_error_en(0, "epoll_ctl: listen_sock err");
 		}
 
 		for (;;)
@@ -705,9 +699,8 @@ void epoll_func(void *ptr)
 			nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
 			if (nfds == -1)
 			{
-				perror("epoll_pwait err");
 				close(listen_sock);
-				exit(EXIT_FAILURE);
+				handle_error_en(0, "epoll_pwait err");
 			}
 
 			for (n = 0; n < nfds; ++n)
@@ -761,7 +754,7 @@ void epoll_func(void *ptr)
 						if (epoll_non_blocking(listen_sock) == -1)
 						{
 							close(listen_sock);
-							exit(EXIT_FAILURE);
+							handle_error_en(0, "epoll set error");
 						}
 						dump_recv_func(data->paras_in->bidirection,
 								data->paras_in->debug, UDP_DGRAM,
@@ -778,9 +771,8 @@ void epoll_func(void *ptr)
 						if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev)
 								== -1)
 						{
-							perror("epoll_ctl: conn_sock err");
 							close(conn_sock);
-							exit(EXIT_FAILURE);
+							handle_error_en(0, "epoll_ctl: conn_sock err");
 						}
 					}
 				}
@@ -880,6 +872,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 2)
 	{
+		printf("%s",VERSION);
 		show_help();
 		exit(EXIT_FAILURE);
 	}
@@ -913,14 +906,12 @@ int main(int argc, char *argv[])
 	{
 		if (paras_in.bidirection == 1)
 		{
-			printf("\nbidirection mode only for UDP protocol!\n\n");
-			exit(EXIT_FAILURE);
+			handle_error_en(0, "bidirection mode only for UDP protocol!");
 		}
 
 		if (paras_in.debug == 1)
 		{
-			printf("\ndebug mode only for UDP protocol!\n\n");
-			exit(EXIT_FAILURE);
+			handle_error_en(0, "debug mode only for UDP protocol!");
 		}
 	}
 

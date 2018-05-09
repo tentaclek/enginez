@@ -38,8 +38,7 @@ int ip_addr_check(const char *ip_addr)
 	if ((inet_pton(AF_INET6, ip_addr, &addr_6.sin6_addr) <= 0)
 			&& (inet_aton(ip_addr, &addr_4.sin_addr) == 0))
 	{
-		printf("enginez need a proper IP address!\n");
-		exit(EXIT_FAILURE);
+		handle_error_en(0, "enginez need a proper IP address!");
 	}
 
 	return RET_SUCCESS;
@@ -98,11 +97,8 @@ int parse_paras(struct paras *paras_in, int argc, char **argv)
 				return RET_FAILURE;
 			}
 
-			//if(ip_addr_check(optarg))
-			{
-				paras_in->service_mod = CLIENT_MOD;
-				strncpy(paras_in->peer_addr, optarg, 64);
-			}
+			paras_in->service_mod = CLIENT_MOD;
+			strncpy(paras_in->peer_addr, optarg, 64);
 			break;
 
 		case 'd':
@@ -321,7 +317,6 @@ int tcp_scan(struct paras *paras_in)
 			if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
 			{
 				printf("\033[32mservice @%6s OK\n", service);
-				//break; /* Success */
 			}
 			close(sfd);
 		}

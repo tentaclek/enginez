@@ -23,8 +23,8 @@
 
 const char usage_str[] =
 		"\nUsage: enginez [-s|-c host] [options]\n"
-				"enginez [-h|--help]\n"
-				"Service mode:Server/Client(TCP as default protocol)\n"
+				"\nenginez [-h|--help]\n"
+				"\nService mode:Server/Client(TCP as default protocol)\n"
 				" -s 	--server	run as server mode, can accept both IPv4 and IPv6 on port 9000\n"
 				" -c 	--client	run as client mode\n"
 				" -d	--debug		run as single packet UDP C/S mode\n"

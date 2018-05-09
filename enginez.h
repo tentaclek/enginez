@@ -56,7 +56,7 @@
 #define MAX_THREADS   10
 #define DEFAULT_BUFF_LEN SEND_BUFFER
 #define DEFAULT_THREAD_NUM 1
-#define VERSION "\nenginez V1.2 B20180410\n"
+#define VERSION "enginez V1.2 B20180410\n"
 
 #define SERVER_TBITS_STRING "Z server rx:\033[32m%8.3lf Tbits/s %8.3lf Kpps\033[0m\b\r"
 #define SERVER_GBITS_STRING "Z server rx:\033[32m%8.3lf Gbits/s %8.3lf Kpps\033[0m\b\r"
@@ -109,7 +109,6 @@ typedef struct paras
 	int protocol;
 	int time_interval;
 	int sockfd;
-	int __padding__;
 	int thread_num;
 	char peer_addr[64];
 	char port[8];
