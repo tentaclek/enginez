@@ -3,17 +3,17 @@
  *
  * Engine Zero, enginez would just be a tcp/udp benchmark tool
  * which support basic epoll implement and running as a multi-thread mode
- * 
+ *
  * enginez is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * enginez is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -36,6 +36,9 @@
 #include <getopt.h>
 #include <signal.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
 
 /*
  * when enginez running as tcp server we need increase recv_buffer to 2000000 bytes
@@ -53,7 +56,7 @@
 #define MAX_THREADS   10
 #define DEFAULT_BUFF_LEN SEND_BUFFER
 #define DEFAULT_THREAD_NUM 1
-#define VERSION "\nenginez V1.1 B20170329\n"
+#define VERSION "\nenginez V1.2 B20180410\n"
 
 #define SERVER_TBITS_STRING "Z server rx:\033[32m%8.3lf Tbits/s %8.3lf Kpps\033[0m\b\r"
 #define SERVER_GBITS_STRING "Z server rx:\033[32m%8.3lf Gbits/s %8.3lf Kpps\033[0m\b\r"
@@ -82,33 +85,34 @@
 #define handle_error_en(en, message) \
                do { errno = en; perror(message); exit(EXIT_FAILURE); } while (0)
 
-enum server_enum {
-    SERVER_MOD = 1,
-    CLIENT_MOD = 2,
-    TCP_STREAM = 3,
-    UDP_DGRAM = 4,
+enum server_enum
+{
+	SERVER_MOD = 1, CLIENT_MOD = 2, TCP_STREAM = 3, UDP_DGRAM = 4,
 };
 
-typedef struct str_thdata {
-    int thread_no;
-    pthread_t thread_id;
-    struct paras *paras_in;
+typedef struct str_thdata
+{
+	int thread_no;
+	pthread_t thread_id;
+	struct paras *paras_in;
 } thdata;
 
-typedef struct paras {
-    int service_mod;
-    int time_perform;
-    int debug;
-    int bidirection;
-    int buff_len;
-    int protocol;
-    int time_interval;
-    int sockfd;
-    int __padding__;
-    int thread_num;
-    char peer_addr[64];
-    char port[8];
+typedef struct paras
+{
+	int service_mod;
+	int time_perform;
+	int debug;
+	int quality;
+	int scan;
+	int bidirection;
+	int buff_len;
+	int protocol;
+	int time_interval;
+	int sockfd;
+	int __padding__;
+	int thread_num;
+	char peer_addr[64];
+	char port[8];
 } s_paras;
-
 
 #endif /* ENGINEZ_H_ */
