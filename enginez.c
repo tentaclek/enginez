@@ -219,6 +219,20 @@ static inline int live_meter(int service_mod, int bi, int thread_no,
 	return RET_SUCCESS;
 }
 
+static inline int char_to_hex(char *char_in, ssize_t len)
+{
+	printf("\n------Message from client------\n\n");
+	for( ; len >= 0 ; len--)
+	{
+		if (len%8 == 0)
+		{
+			printf("|\n| ");
+		}
+		printf("0x%04x ", *(char_in + (len-1)));
+	}
+	return RET_SUCCESS;
+}
+
 static int epoll_non_blocking(int sockfd)
 {
 	int flags;
@@ -476,6 +490,21 @@ int dump_send_func(void *ptr)
 				return RET_FAILURE;
 			}
 
+			if (data->paras_in->debug == 1)
+			{
+				char recv_buff[512] = "\0";
+				int len = 0;
+				len = recv(sockfd, recv_buff, 512, MSG_DONTWAIT);
+				if (len > 0)
+				{
+					printf("\nthread[%d] recv tcp ack:", data->thread_no);
+					char_to_hex(recv_buff, len);
+					fflush(stdout);
+				}
+				sleep(2);				
+				continue;
+			}
+
 			if (iret < 0)
 			{
 				perror("Send err");
@@ -491,6 +520,24 @@ char tcp_buffer[TCP_RECV_BUFFER + 1] = "\0";
 char udp_buffer[UDP_RECV_BUFFER + 1] = "\0";
 struct sockaddr_in6 peer_addr;
 socklen_t sock_len;
+
+/* tcp debug mode: simple tcp ack server */
+static inline int show_message_server_recv(int sockfd, ssize_t *bytes_count, double *bytes_recv)
+{
+	char write_back_buff[TCP_RECV_BUFFER + 1] = "\0";
+	memset(tcp_buffer, 0x0, TCP_RECV_BUFFER+1);
+
+	*bytes_count = recv(sockfd, tcp_buffer, TCP_RECV_BUFFER+1, MSG_DONTWAIT);
+	
+	char_to_hex(tcp_buffer, *bytes_count);
+	/* write back only 128 bytes of original message to client */
+	char *ack_msg = "Ack from server | original message:";
+	strncat(write_back_buff, ack_msg, strlen(ack_msg));
+	strncat(write_back_buff, tcp_buffer, 128);
+	write(sockfd, write_back_buff, strlen(write_back_buff));
+
+	return RET_SUCCESS;
+}
 
 static inline ssize_t dump_recv_func(int bi, int debug, int protocol,
 		int sockfd, ssize_t *bytes_count, double *bytes_recv,
@@ -780,11 +827,20 @@ void epoll_func(void *ptr)
 				{
 					if (data->paras_in->protocol == TCP_STREAM)
 					{
-						ret_len = dump_recv_func(data->paras_in->bidirection,
-								data->paras_in->debug, TCP_STREAM,
-								events[n].data.fd, &bytes_count, &bytes_recv,
-								&time_start, &pack_count);
-						pack_count++;
+						if (data->paras_in->debug != 1)
+						{
+							ret_len = dump_recv_func(data->paras_in->bidirection,
+									data->paras_in->debug, TCP_STREAM,
+									events[n].data.fd, &bytes_count, &bytes_recv,
+									&time_start, &pack_count);
+							pack_count++;
+						}
+						else/* Output message running at debug module */
+						{
+							show_message_server_recv(events[n].data.fd, &bytes_count, 
+							&bytes_recv);
+						}
+
 					}
 					else
 					{
@@ -907,11 +963,6 @@ int main(int argc, char *argv[])
 		if (paras_in.bidirection == 1)
 		{
 			handle_error_en(0, "bidirection mode only for UDP protocol!");
-		}
-
-		if (paras_in.debug == 1)
-		{
-			handle_error_en(0, "debug mode only for UDP protocol!");
 		}
 	}
 
